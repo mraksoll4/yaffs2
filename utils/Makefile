@@ -15,7 +15,7 @@
 
 #KERNELDIR = /usr/src/kernel-headers-2.4.18
 
-CFLAGS =    -O2 -Wall -Werror -DCONFIG_YAFFS_UTIL
+CFLAGS =    -O2 -Wall -Werror -DCONFIG_YAFFS_UTIL -I../core -I../direct -I.
 CFLAGS+=   -Wshadow -Wpointer-arith -Wwrite-strings -Wstrict-prototypes -Wmissing-declarations
 CFLAGS+=   -Wmissing-prototypes -Wredundant-decls -Wnested-externs -Winline
 
@@ -45,7 +45,7 @@ ALL_LINKS = $(BASE_LINKS) $(DIRECT_LINKS)
 all: mkyaffsimage mkyaffs2image
 
 $(BASE_LINKS):
-	ln -s ../$@ $@
+	ln -s ../core/$@ $@
 
 $(DIRECT_LINKS):
 	ln -s ../direct/$@ $@

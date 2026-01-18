@@ -30,6 +30,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <assert.h>
+#include <time.h>
 #include "yaffs_ecc.h"
 #include "yaffs_guts.h"
 #include "yaffs_endian.h"
@@ -42,7 +43,8 @@ unsigned yaffs_trace_mask=0;
 
 // Adjust these to match your NAND LAYOUT:
 #define chunkSize 2048
-#define spareSize 64
+#define spareSize 16
+#define INBANDTAGS 1
 #define pagesPerBlock 64
 
 
@@ -189,9 +191,13 @@ static void little_to_big_endian(struct yaffs_ext_tags *tagsPtr)
 
 static void shuffle_oob(char *spareData, struct yaffs_packed_tags2 *pt)
 {
+#ifndef INBANDTAGS
 	assert(sizeof(*pt) <= spareSize);
-	// NAND LAYOUT: For non-trivial OOB orderings, here would be a good place to shuffle.
 	memcpy(spareData, pt, sizeof(*pt));
+#else
+	/* tags only, no ecc - для 16-byte spare */
+	memcpy(spareData, &pt->t, sizeof(pt->t));
+#endif
 }
 
 static int write_chunk(u8 *data, u32 id, u32 chunk_id, u32 n_bytes)
@@ -564,8 +570,22 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	printf("Processing directory %s into image file %s\n",argv[1],argv[2]);
-	process_directory(YAFFS_OBJECTID_ROOT,argv[1]);
+    printf("Processing directory %s into image file %s\n",argv[1],argv[2]);
+    
+    // Создаём ROOT объект (объект 1 = YAFFS_OBJECTID_ROOT)
+    struct stat root_stat;
+    memset(&root_stat, 0, sizeof(root_stat));
+    root_stat.st_mode = S_IFDIR | 0755;
+    root_stat.st_uid = 0;
+    root_stat.st_gid = 0;
+    root_stat.st_atime = root_stat.st_mtime = root_stat.st_ctime = time(NULL);
+    
+    printf("Object %d, ROOT is a directory\n", YAFFS_OBJECTID_ROOT);
+    write_object_header(YAFFS_OBJECTID_ROOT, YAFFS_OBJECT_TYPE_DIRECTORY, 
+                        &root_stat, YAFFS_OBJECTID_ROOT, "", -1, NULL);
+    n_obj++;
+    
+    process_directory(YAFFS_OBJECTID_ROOT,argv[1]);
 
 	pad_image();
 

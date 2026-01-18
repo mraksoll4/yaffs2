@@ -21,18 +21,37 @@
 
 #ifndef u8
 #define u8 unsigned char
+#ifndef YTIME_T
+#define YTIME_T unsigned
+#endif
+
 #endif
 
 #ifndef u16
 #define u16 unsigned short
+#ifndef YTIME_T
+#define YTIME_T unsigned
+#endif
+
 #endif
 
 #ifndef u32
 #define u32 unsigned int
+#ifndef YTIME_T
+#define YTIME_T unsigned
+#endif
+
 #endif
 
 #ifndef s32
 #define s32 int
+#ifndef u64
+#define u64 unsigned long long
+#endif
+#ifndef YTIME_T
+#define YTIME_T unsigned
+#endif
+
 #endif
 
 
@@ -45,4 +64,8 @@
 #define hweight32(x) yaffs_hweight32(x)
 
 #define yaffs_trace(...) do {} while (0)
+#ifndef YTIME_T
+#define YTIME_T unsigned
+#endif
+
 #endif
